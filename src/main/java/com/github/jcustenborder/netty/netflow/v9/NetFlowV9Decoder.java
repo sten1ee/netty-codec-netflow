@@ -24,7 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
   private static final Logger log = LoggerFactory.getLogger(NetFlowV9Decoder.class);
@@ -74,13 +76,15 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
     short fieldCount = input.readShort();
     log.trace("templateID = {} fieldCount = {}", templateID, fieldCount);
     List<TemplateField> fields = new ArrayList<>(fieldCount);
+    int fieldOffset = 0;
     for (short j = 1; j <= fieldCount; j++) {
       short fieldType = input.readShort();
       short fieldLength = input.readShort();
-      log.trace("field({}/{}): type = {} length = {}", j, fieldCount, fieldType, fieldLength);
+      log.trace("field({}/{}): type = {} length = {} offset = {}", j, fieldCount, fieldType, fieldLength, fieldOffset);
 
-      TemplateField templateField = this.netflowFactory.templateField(fieldType, fieldLength);
+      TemplateField templateField = this.netflowFactory.templateField(fieldType, fieldLength, fieldOffset);
       fields.add(templateField);
+      fieldOffset += fieldLength;
     }
     checkReadFully(input);
     return this.netflowFactory.templateFlowSet(flowSetID, templateID, fields);
@@ -109,6 +113,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
     log.trace("Read {} for header. {} remaining", input.readerIndex(), input.readableBytes());
 
     List<FlowSet> flowSets = new ArrayList<>();
+    Map<Short, TemplateFlowSet> templateByIdMap = new HashMap<>();
 
     while (input.readableBytes() > 0) {
       final short flowsetID = input.readShort();
@@ -117,6 +122,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
       if (0 == flowsetID) {
         TemplateFlowSet templateFlowSet = decodeTemplate(input, flowsetID);
         flowSets.add(templateFlowSet);
+        templateByIdMap.put(templateFlowSet.templateID(), templateFlowSet);
       } else {
         DataFlowSet dataFlowSet = decodeData(input, flowsetID);
         flowSets.add(dataFlowSet);
@@ -134,7 +140,8 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
         header.sourceID,
         header.sender,
         header.recipient,
-        flowSets
+        flowSets,
+        templateByIdMap
     );
     output.add(message);
 
@@ -180,6 +187,8 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
     InetSocketAddress recipient();
 
     List<FlowSet> flowsets();
+
+    TemplateFlowSet templateById(short templateId);
   }
 
   public interface FlowSet {
@@ -189,7 +198,15 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
   public interface TemplateField {
     short type();
 
+    /**
+     * field length (in bytes)
+     */
     short length();
+
+    /**
+     * field offset (in bytes) relative to FlowSet data block beginning
+     */
+    int offset();
   }
 
   public interface TemplateFlowSet extends FlowSet {
@@ -204,9 +221,9 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
   }
 
   public interface NetflowFactory {
-    NetFlowMessage netflowMessage(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<FlowSet> flowsets);
+    NetFlowMessage netflowMessage(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<FlowSet> flowsets, Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap);
 
-    TemplateField templateField(short type, short length);
+    TemplateField templateField(short type, short length, int offset);
 
     TemplateFlowSet templateFlowSet(short flowsetID, short templateID, List<TemplateField> fields);
 

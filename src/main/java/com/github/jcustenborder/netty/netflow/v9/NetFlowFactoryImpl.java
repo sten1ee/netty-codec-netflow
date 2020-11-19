@@ -18,17 +18,18 @@ package com.github.jcustenborder.netty.netflow.v9;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
 
   @Override
-  public NetFlowV9Decoder.NetFlowMessage netflowMessage(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<NetFlowV9Decoder.FlowSet> flowsets) {
-    return new NetFlowMessageImpl(version, count, uptime, timestamp, flowSequence, sourceID, sender, recipient, flowsets);
+  public NetFlowV9Decoder.NetFlowMessage netflowMessage(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<NetFlowV9Decoder.FlowSet> flowsets, Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap) {
+    return new NetFlowMessageImpl(version, count, uptime, timestamp, flowSequence, sourceID, sender, recipient, flowsets, templateByIdMap);
   }
 
   @Override
-  public NetFlowV9Decoder.TemplateField templateField(short type, short length) {
-    return new TemplateFieldImpl(type, length);
+  public NetFlowV9Decoder.TemplateField templateField(short type, short length, int offset) {
+    return new TemplateFieldImpl(type, length, offset);
   }
 
   @Override
@@ -51,8 +52,9 @@ class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
     final InetSocketAddress sender;
     final InetSocketAddress recipient;
     final List<NetFlowV9Decoder.FlowSet> flowsets;
+    final Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap;
 
-    NetFlowMessageImpl(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<NetFlowV9Decoder.FlowSet> flowsets) {
+    NetFlowMessageImpl(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<NetFlowV9Decoder.FlowSet> flowsets, Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap) {
       this.version = version;
       this.count = count;
       this.uptime = uptime;
@@ -62,6 +64,7 @@ class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
       this.sender = sender;
       this.recipient = recipient;
       this.flowsets = Collections.unmodifiableList(flowsets);
+      this.templateByIdMap = templateByIdMap;
     }
 
 
@@ -109,15 +112,22 @@ class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
     public List<NetFlowV9Decoder.FlowSet> flowsets() {
       return this.flowsets;
     }
+
+    @Override
+    public NetFlowV9Decoder.TemplateFlowSet templateById(short templateId) {
+      return templateByIdMap.get(templateId);
+    }
   }
 
   static class TemplateFieldImpl implements NetFlowV9Decoder.TemplateField {
     final short type;
     final short length;
+    final int offset;
 
-    TemplateFieldImpl(short type, short length) {
+    TemplateFieldImpl(short type, short length, int offset) {
       this.type = type;
       this.length = length;
+      this.offset = offset;
     }
 
     @Override
@@ -128,6 +138,11 @@ class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
     @Override
     public short length() {
       return this.length;
+    }
+
+    @Override
+    public int offset() {
+      return this.offset;
     }
   }
 
