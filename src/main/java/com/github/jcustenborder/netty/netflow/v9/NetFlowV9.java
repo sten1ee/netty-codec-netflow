@@ -19,6 +19,9 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This a hollow/namespace interface that contains all the interfaces related to NetFlowV9
+ */
 public interface NetFlowV9 {
   final class Header {
     final short version;
@@ -97,5 +100,24 @@ public interface NetFlowV9 {
     TemplateFlowSet templateFlowSet(short flowsetID, short templateID, List<TemplateField> fields);
 
     DataFlowSet dataFlowSet(short flowsetID, byte[] data);
+  }
+
+  final class FieldType {
+    final String name;
+    final short type;   // type id in the current FieldTypeScheme
+    final short length; // 0 length indicates variable field length
+
+    FieldType(String fieldName, short fieldType, short fieldLength) {
+      name = fieldName;
+      type = fieldType;
+      length = fieldLength;
+    }
+  }
+
+  /**
+   * A set of FieldType(s) that maps type id to type name and field length
+   */
+  interface FieldTypeScheme {
+    FieldType getFieldType(int type);
   }
 }
