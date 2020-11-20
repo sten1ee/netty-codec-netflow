@@ -16,6 +16,8 @@
 package com.github.jcustenborder.netty.netflow.v9;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -103,13 +105,19 @@ public interface NetFlowV9 {
 
   final class FieldType {
     final String name;
-    final short type;   // type id in the current FieldTypeScheme
+    final short typeId;   // type id in the current FieldTypeScheme
     final short length; // 0 length indicates variable field length
+    final FieldTypeScheme.DataType dataType;
 
-    FieldType(String fieldName, short fieldType, short fieldLength) {
+    FieldType(String fieldName, short fieldTypeId, short fieldLength) {
+      this(fieldName, fieldTypeId, fieldLength, FieldTypeScheme.DataType.BYTE_ARRAY);
+    }
+
+    FieldType(String fieldName, short fieldTypeId, short fieldLength, FieldTypeScheme.DataType fieldDataType) {
       name = fieldName;
-      type = fieldType;
+      typeId = fieldTypeId;
       length = fieldLength;
+      dataType = fieldDataType;
     }
   }
 
@@ -117,6 +125,108 @@ public interface NetFlowV9 {
    * A set of FieldType(s) that maps type id to type name and field length
    */
   interface FieldTypeScheme {
-    FieldType getFieldType(int type);
+    enum DataType {
+      ASCII_STRING,
+      INTEGER,
+      BIG_INTEGER,
+      MAC_ADDR,
+      IPV4_ADDR,
+      IPV6_ADDR,
+      BYTE_ARRAY,
+    }
+
+    FieldType getFieldType(int typeId);
+
+    Charset ASCII = Charset.forName("US-ASCII");
+
+    default LinkedHashMap<String, Object>  toDictionary(DataFlowSet dfs) {
+      LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+      for (TemplateField templateField : dfs.template().fields()) {
+        FieldType ft = getFieldType(templateField.type());
+        byte[] data = dfs.data();
+        int off = templateField.offset();
+        int len = templateField.length();
+        Object value;
+      SWITCH:
+        switch (ft.dataType) {
+          case BYTE_ARRAY:
+          case ASCII_STRING:
+            value = new String(data, off, len, ASCII);
+            break;
+
+          case MAC_ADDR:
+            assertThat(len == 6);
+            value = String.format("%02x:%02x:%02x:%02x:%02x:%02x",
+                                  data[off + 0] & 0xFF, data[off + 1] & 0xFF, data[off + 2] & 0xFF,
+                                  data[off + 3] & 0xFF, data[off + 4] & 0xFF, data[off + 5] & 0xFF);
+            break;
+
+          case IPV4_ADDR:
+            assertThat(len == 4);
+            value = String.format("%d.%d.%d.%d",
+                                  data[off + 0] & 0xFF, data[off + 1] & 0xFF, data[off + 2] & 0xFF, data[off + 3] & 0xFF);
+            break;
+
+          case IPV6_ADDR:
+            assertThat(len == 16);
+            value = String.format("%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X:%02X%02X",
+                                  data[off + 0] & 0xFF, data[off + 1] & 0xFF, data[off + 2] & 0xFF, data[off + 3] & 0xFF,
+                                  data[off + 4] & 0xFF, data[off + 5] & 0xFF, data[off + 6] & 0xFF, data[off + 7] & 0xFF,
+                                  data[off + 8] & 0xFF, data[off + 9] & 0xFF, data[off + 10] & 0xFF, data[off + 11] & 0xFF,
+                                  data[off + 12] & 0xFF, data[off + 13] & 0xFF, data[off + 14] & 0xFF, data[off + 15] & 0xFF);
+            break;
+
+          case INTEGER:
+          case BIG_INTEGER: // network is BIG ENDIAN !!!
+            long val = 0;
+            for (int i = 0; i < len; ++i) {
+              if ((val >> 56) != 0) { // if the most significant byte is non-zero
+                // we will have a Long overflow on the next step, so stop here and return:
+                value = "<<BIG_INTEGER>>";
+                break SWITCH;
+              }
+              val <<= 8;
+              val |= data[off + i] & 0xFF;
+            }
+
+            if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
+              if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
+                if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
+                  value = (byte) val;
+                } else {
+                  value = (short) val;
+                }
+              } else {
+                value = (int) val;
+              }
+            } else {
+              value = (long) val;
+            }
+            break;
+
+          default:
+            assertThat(false, "Unexpected dataType: " + ft.dataType);
+            value = null;
+        }
+
+        if (value != null) {
+          map.put(ft.name, value);
+        }
+      }
+
+      return map;
+    }
+
+    static void assertThat(boolean condition, String msg) throws IllegalArgumentException {
+      if (!condition) {
+        throw new IllegalArgumentException(msg);
+      }
+    }
+
+    static void assertThat(boolean condition) throws IllegalArgumentException {
+      if (!condition) {
+        throw new IllegalArgumentException("Unexpected");
+      }
+    }
   }
 }
