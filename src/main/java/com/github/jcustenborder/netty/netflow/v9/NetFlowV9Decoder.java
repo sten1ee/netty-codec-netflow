@@ -28,12 +28,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
+
+public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
+                              implements NetFlowV9 {
   private static final Logger log = LoggerFactory.getLogger(NetFlowV9Decoder.class);
 
-  final NetflowFactory netflowFactory;
+  final NetFlowV9.Factory netflowFactory;
 
-  public NetFlowV9Decoder(NetflowFactory netflowFactory) {
+  public NetFlowV9Decoder(NetFlowV9.Factory netflowFactory) {
     this.netflowFactory = netflowFactory;
   }
 
@@ -131,102 +133,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket> {
       log.trace("Read {}. Available {}", input.readerIndex(), input.readableBytes());
     }
 
-    NetFlowMessage message = this.netflowFactory.netflowMessage(
-        header.version,
-        header.count,
-        header.uptime,
-        header.timestamp,
-        header.flowSequence,
-        header.sourceID,
-        header.sender,
-        header.recipient,
-        flowSets,
-        templateByIdMap
-    );
+    Message message = this.netflowFactory.netflowMessage(header, flowSets, templateByIdMap);
     output.add(message);
-
-  }
-
-  static class Header {
-    final short version;
-    final short count;
-    final int uptime;
-    final int timestamp;
-    final int flowSequence;
-    final int sourceID;
-    final InetSocketAddress sender;
-    final InetSocketAddress recipient;
-
-    Header(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient) {
-      this.version = version;
-      this.count = count;
-      this.uptime = uptime;
-      this.timestamp = timestamp;
-      this.flowSequence = flowSequence;
-      this.sourceID = sourceID;
-      this.sender = sender;
-      this.recipient = recipient;
-    }
-  }
-
-  public interface NetFlowMessage {
-    short version();
-
-    short count();
-
-    int uptime();
-
-    int timestamp();
-
-    int flowSequence();
-
-    int sourceID();
-
-    InetSocketAddress sender();
-
-    InetSocketAddress recipient();
-
-    List<FlowSet> flowsets();
-
-    TemplateFlowSet templateById(short templateId);
-  }
-
-  public interface FlowSet {
-    short flowsetID();
-  }
-
-  public interface TemplateField {
-    short type();
-
-    /**
-     * field length (in bytes)
-     */
-    short length();
-
-    /**
-     * field offset (in bytes) relative to FlowSet data block beginning
-     */
-    int offset();
-  }
-
-  public interface TemplateFlowSet extends FlowSet {
-    short templateID();
-
-    List<TemplateField> fields();
-  }
-
-
-  public interface DataFlowSet extends FlowSet {
-    byte[] data();
-  }
-
-  public interface NetflowFactory {
-    NetFlowMessage netflowMessage(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<FlowSet> flowsets, Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap);
-
-    TemplateField templateField(short type, short length, int offset);
-
-    TemplateFlowSet templateFlowSet(short flowsetID, short templateID, List<TemplateField> fields);
-
-    DataFlowSet dataFlowSet(short flowsetID, byte[] data);
   }
 }

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.github.jcustenborder.netty.netflow.v9.NetFlowV9Decoder;
+import com.github.jcustenborder.netty.netflow.v9.NetFlowV9;
 
 import java.io.IOException;
 
@@ -33,9 +33,9 @@ public class TemplateFieldStorage {
   public short type;
   public short length;
 
-  public static class Serializer extends JsonSerializer<NetFlowV9Decoder.TemplateField> {
+  public static class Serializer extends JsonSerializer<NetFlowV9.TemplateField> {
     @Override
-    public void serialize(NetFlowV9Decoder.TemplateField field, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(NetFlowV9.TemplateField field, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
       TemplateFieldStorage storage = new TemplateFieldStorage();
       storage.type = field.type();
       storage.length = field.length();
@@ -43,12 +43,12 @@ public class TemplateFieldStorage {
     }
   }
 
-  public static class Deserializer extends JsonDeserializer<NetFlowV9Decoder.TemplateField> {
+  public static class Deserializer extends JsonDeserializer<NetFlowV9.TemplateField> {
 
     @Override
-    public NetFlowV9Decoder.TemplateField deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public NetFlowV9.TemplateField deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
       TemplateFieldStorage storage = jsonParser.readValueAs(TemplateFieldStorage.class);
-      NetFlowV9Decoder.TemplateField field = mock(NetFlowV9Decoder.TemplateField.class);
+      NetFlowV9.TemplateField field = mock(NetFlowV9.TemplateField.class);
       when(field.type()).thenReturn(storage.type);
       when(field.length()).thenReturn(storage.length);
       return field;

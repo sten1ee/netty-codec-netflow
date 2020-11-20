@@ -17,12 +17,11 @@ package com.github.jcustenborder.netty.netflow.v9.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.github.jcustenborder.netty.netflow.v9.NetFlowV9Decoder;
+import com.github.jcustenborder.netty.netflow.v9.NetFlowV9;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -40,11 +39,11 @@ public class NetflowMessageStorage {
   public int sourceID;
   public InetSocketAddress sender;
   public InetSocketAddress recipient;
-  public List<NetFlowV9Decoder.FlowSet> flowsets;
+  public List<NetFlowV9.FlowSet> flowsets;
 
-  public static class Serializer extends JsonSerializer<NetFlowV9Decoder.NetFlowMessage> {
+  public static class Serializer extends JsonSerializer<NetFlowV9.Message> {
     @Override
-    public void serialize(NetFlowV9Decoder.NetFlowMessage header, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(NetFlowV9.Message header, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
       NetflowMessageStorage storage = new NetflowMessageStorage();
       storage.count = header.count();
       storage.flowSequence = header.flowSequence();
@@ -59,12 +58,12 @@ public class NetflowMessageStorage {
     }
   }
 
-  public static class Deserializer extends JsonDeserializer<NetFlowV9Decoder.NetFlowMessage> {
+  public static class Deserializer extends JsonDeserializer<NetFlowV9.Message> {
 
     @Override
-    public NetFlowV9Decoder.NetFlowMessage deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public NetFlowV9.Message deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
       NetflowMessageStorage storage = jsonParser.readValueAs(NetflowMessageStorage.class);
-      NetFlowV9Decoder.NetFlowMessage header = mock(NetFlowV9Decoder.NetFlowMessage.class);
+      NetFlowV9.Message header = mock(NetFlowV9.Message.class);
       when(header.count()).thenReturn(storage.count);
       when(header.flowSequence()).thenReturn(storage.flowSequence);
       when(header.recipient()).thenReturn(storage.recipient);

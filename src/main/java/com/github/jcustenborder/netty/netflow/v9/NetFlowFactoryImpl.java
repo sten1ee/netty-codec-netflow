@@ -16,110 +16,94 @@
 package com.github.jcustenborder.netty.netflow.v9;
 
 import java.net.InetSocketAddress;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
+class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
 
   @Override
-  public NetFlowV9Decoder.NetFlowMessage netflowMessage(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<NetFlowV9Decoder.FlowSet> flowsets, Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap) {
-    return new NetFlowMessageImpl(version, count, uptime, timestamp, flowSequence, sourceID, sender, recipient, flowsets, templateByIdMap);
+  public Message netflowMessage(Header header, List<FlowSet> flowsets, Map<Short, TemplateFlowSet> templateByIdMap) {
+    return new MessageImpl(header, flowsets, templateByIdMap);
   }
 
   @Override
-  public NetFlowV9Decoder.TemplateField templateField(short type, short length, int offset) {
+  public TemplateField templateField(short type, short length, int offset) {
     return new TemplateFieldImpl(type, length, offset);
   }
 
   @Override
-  public NetFlowV9Decoder.TemplateFlowSet templateFlowSet(short flowsetID, short templateID, List<NetFlowV9Decoder.TemplateField> fields) {
+  public TemplateFlowSet templateFlowSet(short flowsetID, short templateID, List<TemplateField> fields) {
     return new TemplateFlowSetImpl(flowsetID, templateID, fields);
   }
 
   @Override
-  public NetFlowV9Decoder.DataFlowSet dataFlowSet(short flowsetID, byte[] data) {
+  public DataFlowSet dataFlowSet(short flowsetID, byte[] data) {
     return new DataFlowSetImpl(flowsetID, data);
   }
 
-  static class NetFlowMessageImpl implements NetFlowV9Decoder.NetFlowMessage {
-    final short version;
-    final short count;
-    final int uptime;
-    final int timestamp;
-    final int flowSequence;
-    final int sourceID;
-    final InetSocketAddress sender;
-    final InetSocketAddress recipient;
-    final List<NetFlowV9Decoder.FlowSet> flowsets;
-    final Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap;
+  static class MessageImpl implements Message {
+    final Header header;
+    final List<FlowSet> flowsets;
+    final Map<Short, TemplateFlowSet> templateByIdMap;
 
-    NetFlowMessageImpl(short version, short count, int uptime, int timestamp, int flowSequence, int sourceID, InetSocketAddress sender, InetSocketAddress recipient, List<NetFlowV9Decoder.FlowSet> flowsets, Map<Short, NetFlowV9Decoder.TemplateFlowSet> templateByIdMap) {
-      this.version = version;
-      this.count = count;
-      this.uptime = uptime;
-      this.timestamp = timestamp;
-      this.flowSequence = flowSequence;
-      this.sourceID = sourceID;
-      this.sender = sender;
-      this.recipient = recipient;
-      this.flowsets = Collections.unmodifiableList(flowsets);
+    MessageImpl(Header header, List<FlowSet> flowsets, Map<Short, TemplateFlowSet> templateByIdMap) {
+      this.header = header;
+      this.flowsets = flowsets;
       this.templateByIdMap = templateByIdMap;
     }
 
-
     @Override
     public short version() {
-      return this.version;
+      return header.version;
     }
 
     @Override
     public short count() {
-      return this.count;
+      return header.count;
     }
 
     @Override
     public int uptime() {
-      return this.uptime;
+      return header.uptime;
     }
 
     @Override
     public int timestamp() {
-      return this.timestamp;
+      return header.timestamp;
     }
 
     @Override
     public int flowSequence() {
-      return this.flowSequence;
+      return header.flowSequence;
     }
 
     @Override
     public int sourceID() {
-      return this.sourceID;
+      return header.sourceID;
     }
 
     @Override
     public InetSocketAddress sender() {
-      return this.sender;
+      return header.sender;
     }
 
     @Override
     public InetSocketAddress recipient() {
-      return this.recipient;
+      return header.recipient;
     }
 
     @Override
-    public List<NetFlowV9Decoder.FlowSet> flowsets() {
-      return this.flowsets;
+    public List<FlowSet> flowsets() {
+      return flowsets;
     }
 
     @Override
-    public NetFlowV9Decoder.TemplateFlowSet templateById(short templateId) {
+    public TemplateFlowSet templateById(short templateId) {
       return templateByIdMap.get(templateId);
     }
   }
 
-  static class TemplateFieldImpl implements NetFlowV9Decoder.TemplateField {
+  static class TemplateFieldImpl implements TemplateField {
     final short type;
     final short length;
     final int offset;
@@ -146,12 +130,12 @@ class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
     }
   }
 
-  static class TemplateFlowSetImpl implements NetFlowV9Decoder.TemplateFlowSet {
+  static class TemplateFlowSetImpl implements TemplateFlowSet {
     final short flowsetID;
     final short templateID;
-    final List<NetFlowV9Decoder.TemplateField> fields;
+    final List<TemplateField> fields;
 
-    TemplateFlowSetImpl(short flowsetID, short templateID, List<NetFlowV9Decoder.TemplateField> fields) {
+    TemplateFlowSetImpl(short flowsetID, short templateID, List<TemplateField> fields) {
       this.flowsetID = flowsetID;
       this.templateID = templateID;
       this.fields = fields;
@@ -168,12 +152,12 @@ class NetFlowFactoryImpl implements NetFlowV9Decoder.NetflowFactory {
     }
 
     @Override
-    public List<NetFlowV9Decoder.TemplateField> fields() {
+    public List<TemplateField> fields() {
       return this.fields;
     }
   }
 
-  static class DataFlowSetImpl implements NetFlowV9Decoder.DataFlowSet {
+  static class DataFlowSetImpl implements DataFlowSet {
     final short flowsetID;
     final byte[] data;
 

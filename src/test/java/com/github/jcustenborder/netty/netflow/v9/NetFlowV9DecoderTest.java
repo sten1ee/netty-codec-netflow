@@ -55,7 +55,7 @@ public class NetFlowV9DecoderTest {
     return tests.stream().map(testfile -> dynamicTest(testfile, () -> decode(testfile)));
   }
 
-  void assertMessage(final NetFlowV9Decoder.NetFlowMessage expected, final NetFlowV9Decoder.NetFlowMessage actual) {
+  void assertMessage(final NetFlowV9.Message expected, final NetFlowV9.Message actual) {
     assertEquals(expected.count(), actual.count(), "count does not match.");
     assertEquals(expected.version(), actual.version(), "version does not match.");
     assertEquals(expected.flowSequence(), actual.flowSequence(), "flowSequence does not match.");
@@ -67,39 +67,39 @@ public class NetFlowV9DecoderTest {
     assertEquals(expected.flowsets().size(), actual.flowsets().size(), "flowsets.size() does not match.");
 
     for (int i = 0; i < expected.flowsets().size(); i++) {
-      NetFlowV9Decoder.FlowSet expectedFlowset = expected.flowsets().get(i);
-      NetFlowV9Decoder.FlowSet actualFlowset = actual.flowsets().get(i);
+      NetFlowV9.FlowSet expectedFlowset = expected.flowsets().get(i);
+      NetFlowV9.FlowSet actualFlowset = actual.flowsets().get(i);
       assertFlowset(expectedFlowset, actualFlowset);
     }
   }
 
-  void assertDataFlowSet(NetFlowV9Decoder.DataFlowSet expected, NetFlowV9Decoder.DataFlowSet actual) {
+  void assertDataFlowSet(NetFlowV9.DataFlowSet expected, NetFlowV9.DataFlowSet actual) {
     assertArrayEquals(expected.data(), actual.data(), "data does not match.");
   }
 
-  void assertTemplateField(NetFlowV9Decoder.TemplateField expected, NetFlowV9Decoder.TemplateField actual) {
+  void assertTemplateField(NetFlowV9.TemplateField expected, NetFlowV9.TemplateField actual) {
     assertEquals(expected.type(), actual.type(), "type does not match");
     assertEquals(expected.length(), actual.length(), "length does not match");
   }
 
-  void assertTemplateFlowSet(NetFlowV9Decoder.TemplateFlowSet expected, NetFlowV9Decoder.TemplateFlowSet actual) {
+  void assertTemplateFlowSet(NetFlowV9.TemplateFlowSet expected, NetFlowV9.TemplateFlowSet actual) {
     assertEquals(expected.templateID(), actual.templateID(), "templateID does not match.");
     assertEquals(expected.fields().size(), actual.fields().size(), "fields().size() does not match");
 
     for (int i = 0; i < expected.fields().size(); i++) {
-      NetFlowV9Decoder.TemplateField expectedTemplateField = expected.fields().get(i);
-      NetFlowV9Decoder.TemplateField actualTemplateField = actual.fields().get(i);
+      NetFlowV9.TemplateField expectedTemplateField = expected.fields().get(i);
+      NetFlowV9.TemplateField actualTemplateField = actual.fields().get(i);
       assertTemplateField(expectedTemplateField, actualTemplateField);
     }
   }
 
-  void assertFlowset(NetFlowV9Decoder.FlowSet expected, NetFlowV9Decoder.FlowSet actual) {
+  void assertFlowset(NetFlowV9.FlowSet expected, NetFlowV9.FlowSet actual) {
     assertEquals(expected.flowsetID(), actual.flowsetID(), "flowsetID does not match.");
 
-    if (expected instanceof NetFlowV9Decoder.DataFlowSet) {
-      assertDataFlowSet((NetFlowV9Decoder.DataFlowSet) expected, (NetFlowV9Decoder.DataFlowSet) actual);
-    } else if (expected instanceof NetFlowV9Decoder.TemplateFlowSet) {
-      assertTemplateFlowSet((NetFlowV9Decoder.TemplateFlowSet) expected, (NetFlowV9Decoder.TemplateFlowSet) actual);
+    if (expected instanceof NetFlowV9.DataFlowSet) {
+      assertDataFlowSet((NetFlowV9.DataFlowSet) expected, (NetFlowV9.DataFlowSet) actual);
+    } else if (expected instanceof NetFlowV9.TemplateFlowSet) {
+      assertTemplateFlowSet((NetFlowV9.TemplateFlowSet) expected, (NetFlowV9.TemplateFlowSet) actual);
     }
   }
 
@@ -121,8 +121,8 @@ public class NetFlowV9DecoderTest {
     );
     assertEquals(0, datagramPacket.content().readableBytes(), "readableBytes should be 0.");
     assertEquals(1, list.size(), "list size does not match.");
-    assertTrue(list.get(0) instanceof NetFlowV9Decoder.NetFlowMessage, "Object must be instanceof NetFlowMessage.");
-    NetFlowV9Decoder.NetFlowMessage actual = (NetFlowV9Decoder.NetFlowMessage) list.get(0);
+    assertTrue(list.get(0) instanceof NetFlowV9.Message, "Object must be instanceof Message.");
+    NetFlowV9.Message actual = (NetFlowV9.Message) list.get(0);
 //    log.trace(ObjectMapperSingleton.instance.writeValueAsString(actual));
     assertMessage(testCase.expected, actual);
   }
@@ -130,7 +130,7 @@ public class NetFlowV9DecoderTest {
 
   public static class TestCase {
     public byte[] input;
-    public NetFlowV9Decoder.NetFlowMessage expected;
+    public NetFlowV9.Message expected;
 
     public ByteBuf byteBuf() {
       return Unpooled.wrappedBuffer(this.input);
