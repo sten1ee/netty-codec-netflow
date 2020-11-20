@@ -17,13 +17,12 @@ package com.github.jcustenborder.netty.netflow.v9;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Map;
 
 class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
 
   @Override
-  public Message netflowMessage(Header header, List<FlowSet> flowsets, Map<Short, TemplateFlowSet> templateByIdMap) {
-    return new MessageImpl(header, flowsets, templateByIdMap);
+  public Message netflowMessage(Header header, List<FlowSet> flowsets) {
+    return new MessageImpl(header, flowsets);
   }
 
   @Override
@@ -44,12 +43,10 @@ class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
   static class MessageImpl implements Message {
     final Header header;
     final List<FlowSet> flowsets;
-    final Map<Short, TemplateFlowSet> templateByIdMap;
 
-    MessageImpl(Header header, List<FlowSet> flowsets, Map<Short, TemplateFlowSet> templateByIdMap) {
+    MessageImpl(Header header, List<FlowSet> flowsets) {
       this.header = header;
       this.flowsets = flowsets;
-      this.templateByIdMap = templateByIdMap;
     }
 
     @Override
@@ -95,11 +92,6 @@ class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
     @Override
     public List<FlowSet> flowsets() {
       return flowsets;
-    }
-
-    @Override
-    public TemplateFlowSet templateById(short templateId) {
-      return templateByIdMap.get(templateId);
     }
   }
 

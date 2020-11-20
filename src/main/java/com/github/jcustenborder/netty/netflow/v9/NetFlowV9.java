@@ -17,7 +17,6 @@ package com.github.jcustenborder.netty.netflow.v9;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This a hollow/namespace interface that contains all the interfaces related to NetFlowV9
@@ -63,8 +62,6 @@ public interface NetFlowV9 {
     InetSocketAddress recipient();
 
     List<FlowSet> flowsets();
-
-    TemplateFlowSet templateById(short templateId);
   }
 
   interface FlowSet {
@@ -95,7 +92,7 @@ public interface NetFlowV9 {
   }
 
   interface Factory {
-    Message netflowMessage(Header header, List<FlowSet> flowsets, Map<Short, TemplateFlowSet> templateByIdMap);
+    Message netflowMessage(Header header, List<FlowSet> flowsets);
 
     TemplateField templateField(short type, short length, int offset);
 

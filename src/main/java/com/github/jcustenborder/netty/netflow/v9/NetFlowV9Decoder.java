@@ -133,7 +133,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
       log.trace("Read {}. Available {}", input.readerIndex(), input.readableBytes());
     }
 
-    Message message = this.netflowFactory.netflowMessage(header, flowSets, templateByIdMap);
+    Message message = this.netflowFactory.netflowMessage(header, flowSets);
     output.add(message);
   }
 }
