@@ -37,8 +37,8 @@ class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
   }
 
   @Override
-  public DataFlowSet dataFlowSet(short flowsetID, byte[] data) {
-    return new DataFlowSetImpl(flowsetID, data);
+  public DataFlowSet dataFlowSet(short flowsetID, byte[] data, TemplateFlowSet template) {
+    return new DataFlowSetImpl(flowsetID, data, template);
   }
 
   static class MessageImpl implements Message {
@@ -160,10 +160,15 @@ class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
   static class DataFlowSetImpl implements DataFlowSet {
     final short flowsetID;
     final byte[] data;
+    /**
+     * The template that describes this FlowSet. May be null - then this FlowSet should be discarded.
+     */
+    final TemplateFlowSet template;
 
-    DataFlowSetImpl(short flowsetID, byte[] data) {
+    DataFlowSetImpl(short flowsetID, byte[] data, TemplateFlowSet template) {
       this.flowsetID = flowsetID;
       this.data = data;
+      this.template = template;
     }
 
     @Override
@@ -174,6 +179,11 @@ class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
     @Override
     public byte[] data() {
       return this.data;
+    }
+
+    @Override
+    public TemplateFlowSet template() {
+      return template;
     }
   }
 }

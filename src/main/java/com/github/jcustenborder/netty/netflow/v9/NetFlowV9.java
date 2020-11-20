@@ -90,6 +90,8 @@ public interface NetFlowV9 {
 
   interface DataFlowSet extends FlowSet {
     byte[] data();
+
+    TemplateFlowSet template();
   }
 
   interface Factory {
@@ -99,7 +101,7 @@ public interface NetFlowV9 {
 
     TemplateFlowSet templateFlowSet(short flowsetID, short templateID, List<TemplateField> fields);
 
-    DataFlowSet dataFlowSet(short flowsetID, byte[] data);
+    DataFlowSet dataFlowSet(short flowsetID, byte[] data, TemplateFlowSet template);
   }
 
   final class FieldType {

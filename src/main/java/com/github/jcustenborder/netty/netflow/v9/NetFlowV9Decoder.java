@@ -44,7 +44,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
   }
 
   Header decodeHeader(ByteBuf b, InetSocketAddress sender, InetSocketAddress recipient) {
-    final ByteBuf input = b.readSlice(20);
+    ByteBuf input = b.readSlice(20);
 
     short version = input.readShort();
     short count = input.readShort();
@@ -69,10 +69,10 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     }
   }
 
-  TemplateFlowSet decodeTemplate(ByteBuf b, final short flowSetID) {
-    final int length = b.readShort() - 4;
+  TemplateFlowSet decodeTemplate(ByteBuf b, short flowSetID) {
+    int length = b.readShort() - 4;
     log.trace("readSlice({})", length);
-    final ByteBuf input = b.readSlice(length);
+    ByteBuf input = b.readSlice(length);
 
     short templateID = input.readShort();
     short fieldCount = input.readShort();
@@ -92,13 +92,13 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     return this.netflowFactory.templateFlowSet(flowSetID, templateID, fields);
   }
 
-  DataFlowSet decodeData(ByteBuf b, final short flowSetID) {
-    final int length = b.readShort() - 4;
+  DataFlowSet decodeData(ByteBuf b, short flowSetID, TemplateFlowSet template) {
+    int length = b.readShort() - 4;
     log.trace("readSlice({})", length);
-    final ByteBuf input = b.readSlice(length);
+    ByteBuf input = b.readSlice(length);
     byte[] data = new byte[length];
     input.readBytes(data);
-    return this.netflowFactory.dataFlowSet(flowSetID, data);
+    return this.netflowFactory.dataFlowSet(flowSetID, data, template);
   }
 
   @Override
@@ -110,7 +110,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
       return;
     }
 
-    final Header header = decodeHeader(input, datagramPacket.sender(), datagramPacket.recipient());
+    Header header = decodeHeader(input, datagramPacket.sender(), datagramPacket.recipient());
 
     log.trace("Read {} for header. {} remaining", input.readerIndex(), input.readableBytes());
 
@@ -118,7 +118,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     Map<Short, TemplateFlowSet> templateByIdMap = new HashMap<>();
 
     while (input.readableBytes() > 0) {
-      final short flowsetID = input.readShort();
+      short flowsetID = input.readShort();
       log.trace("Processing flowset {}", flowsetID);
 
       if (0 == flowsetID) {
@@ -126,7 +126,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
         flowSets.add(templateFlowSet);
         templateByIdMap.put(templateFlowSet.templateID(), templateFlowSet);
       } else {
-        DataFlowSet dataFlowSet = decodeData(input, flowsetID);
+        DataFlowSet dataFlowSet = decodeData(input, flowsetID, templateByIdMap.get(flowsetID));
         flowSets.add(dataFlowSet);
       }
 
