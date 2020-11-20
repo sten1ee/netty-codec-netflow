@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * This a hollow/namespace interface that contains all the interfaces related to NetFlowV9
+ * This a namespace interface that contains all the interfaces related to NetFlowV9
  */
 public interface NetFlowV9 {
   final class Header {
@@ -127,6 +127,9 @@ public interface NetFlowV9 {
   interface FieldTypeScheme {
     enum DataType {
       ASCII_STRING,
+      HEX_BYTE,
+      BYTE,
+      SHORT,
       INTEGER,
       BIG_INTEGER,
       MAC_ADDR,
@@ -176,6 +179,12 @@ public interface NetFlowV9 {
                                   data[off + 12] & 0xFF, data[off + 13] & 0xFF, data[off + 14] & 0xFF, data[off + 15] & 0xFF);
             break;
 
+          case HEX_BYTE:
+            value = String.format("0x%02X", data[off]);
+            break;
+
+          case BYTE:
+          case SHORT:
           case INTEGER:
           case BIG_INTEGER: // network is BIG ENDIAN !!!
             long val = 0;

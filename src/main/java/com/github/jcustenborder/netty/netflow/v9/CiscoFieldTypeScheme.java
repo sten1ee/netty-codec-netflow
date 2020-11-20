@@ -35,19 +35,19 @@ public class CiscoFieldTypeScheme implements NetFlowV9.FieldTypeScheme {
 
   static {
     regFieldType("RESERVED",                      0,   0);
-    regFieldType("IN_BYTES",                      1,   0);
-    regFieldType("IN_PKTS",                       2,   0);
-    regFieldType("FLOWS",                         3,   0);
-    regFieldType("PROTOCOL",                      4,   1);
-    regFieldType("TOS",                           5,   1);
-    regFieldType("TCP_FLAGS",                     6,   1);
-    regFieldType("L4_SRC_PORT",                   7,   2);
+    regFieldType("IN_BYTES",                      1,   0, DataType.BIG_INTEGER);
+    regFieldType("IN_PKTS",                       2,   0, DataType.BIG_INTEGER);
+    regFieldType("FLOWS",                         3,   0, DataType.BIG_INTEGER);
+    regFieldType("PROTOCOL",                      4,   1, DataType.BYTE);
+    regFieldType("TOS",                           5,   1, DataType.HEX_BYTE);
+    regFieldType("TCP_FLAGS",                     6,   1, DataType.HEX_BYTE);
+    regFieldType("L4_SRC_PORT",                   7,   2, DataType.SHORT);
     regFieldType("IPV4_SRC_ADDR",                 8,   4, DataType.IPV4_ADDR);
-    regFieldType("SRC_MASK",                      9,   1);
+    regFieldType("SRC_MASK",                      9,   1, DataType.HEX_BYTE);
     regFieldType("INPUT_SNMP",                   10,   0);
-    regFieldType("L4_DST_PORT",                  11,   2);
+    regFieldType("L4_DST_PORT",                  11,   2, DataType.SHORT);
     regFieldType("IPV4_DST_ADDR",                12,   4, DataType.IPV4_ADDR);
-    regFieldType("DST_MASK",                     13,   1);
+    regFieldType("DST_MASK",                     13,   1, DataType.HEX_BYTE);
     regFieldType("OUTPUT_SNMP",                  14,   0);
     regFieldType("IPV4_NEXT_HOP",                15,   4, DataType.IPV4_ADDR);
     regFieldType("SRC_AS",                       16,   0);
@@ -55,12 +55,12 @@ public class CiscoFieldTypeScheme implements NetFlowV9.FieldTypeScheme {
     regFieldType("BGP_IPV4_NEXT_HOP",            18,   4, DataType.IPV4_ADDR);
     regFieldType("MUL_DST_PKTS",                 19,   0);
     regFieldType("MUL_DST_BYTES",                20,   0);
-    regFieldType("LAST_SWITCHED",                21,   4);
-    regFieldType("FIRST_SWITCHED",               22,   4);
+    regFieldType("LAST_SWITCHED",                21,   4, DataType.INTEGER);
+    regFieldType("FIRST_SWITCHED",               22,   4, DataType.INTEGER);
     regFieldType("OUT_BYTES",                    23,   0);
     regFieldType("OUT_PKTS",                     24,   0);
-    regFieldType("MIN_PKT_LNGTH",                25,   2);
-    regFieldType("MAX_PKT_LNGTH",                26,   2);
+    regFieldType("MIN_PKT_LNGTH",                25,   2, DataType.SHORT);
+    regFieldType("MAX_PKT_LNGTH",                26,   2, DataType.SHORT);
     regFieldType("IPV6_SRC_ADDR",                27,  16, DataType.IPV6_ADDR);
     regFieldType("IPV6_DST_ADDR",                28,  16, DataType.IPV6_ADDR);
     regFieldType("IPV6_SRC_MASK",                29,   1);
@@ -94,8 +94,8 @@ public class CiscoFieldTypeScheme implements NetFlowV9.FieldTypeScheme {
     regFieldType("DST_MAC",                      57,   6, DataType.MAC_ADDR);
     regFieldType("SRC_VLAN",                     58,   2);
     regFieldType("DST_VLAN",                     59,   2);
-    regFieldType("IP_PROTOCOL_VERSION",          60,   1);
-    regFieldType("DIRECTION",                    61,   1);
+    regFieldType("IP_PROTOCOL_VERSION",          60,   1, DataType.BYTE);
+    regFieldType("DIRECTION",                    61,   1, DataType.BYTE);
     regFieldType("IPV6_NEXT_HOP",                62,  16, DataType.IPV6_ADDR);
     regFieldType("BGP_IPV6_NEXT_HOP",            63,  16, DataType.IPV6_ADDR);
     regFieldType("IPV6_OPTION_HEADERS",          64,   4);
