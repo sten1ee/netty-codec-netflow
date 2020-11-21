@@ -103,44 +103,45 @@ public interface NetFlowV9 {
     DataFlowSet dataFlowSet(short flowsetID, byte[] data, TemplateFlowSet template);
   }
 
-  enum DataType {
-    ASCII_STRING,
-    HEX_BYTE,
-    BYTE,
-    SHORT,
-    INTEGER,
-    BIG_INTEGER,
-    MAC_ADDR,
-    IPV4_ADDR,
-    IPV6_ADDR,
-    BYTE_ARRAY,
-  }
 
   interface Field {
     String name();
 
     DataType dataType();
+
+    enum DataType {
+      ASCII_STRING,
+      HEX_BYTE,
+      BYTE,
+      SHORT,
+      INTEGER,
+      BIG_INTEGER,
+      MAC_ADDR,
+      IPV4_ADDR,
+      IPV6_ADDR,
+      BYTE_ARRAY,
+    }
   }
 
   /**
    * A set of Field(s) that maps field type id to field name and data type
    */
-  interface FieldScheme {
+  interface FieldScheme<F extends Field> {
 
-    Field getField(int typeId);
+    F getField(int typeId);
 
     Charset ASCII = Charset.forName("US-ASCII");
 
-    default LinkedHashMap<String, Object>  toDictionary(DataFlowSet dfs) {
-      LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+    default LinkedHashMap<F, Object> parse(DataFlowSet dfs) {
+      LinkedHashMap<F, Object> map = new LinkedHashMap<>();
       for (TemplateField templateField : dfs.template().fields()) {
-        Field ft = getField(templateField.type());
+        F f = getField(templateField.type());
         byte[] data = dfs.data();
         int off = templateField.offset();
         int len = templateField.length();
         Object value;
       SWITCH:
-        switch (ft.dataType()) {
+        switch (f.dataType()) {
           case BYTE_ARRAY:
           case ASCII_STRING:
             value = new String(data, off, len, ASCII);
@@ -203,12 +204,12 @@ public interface NetFlowV9 {
             break;
 
           default:
-            assertThat(false, "Unexpected dataType: " + ft.dataType());
+            assertThat(false, "Field " + f + " has unexpected dataType: " + f.dataType());
             value = null;
         }
 
         if (value != null) {
-          map.put(ft.name(), value);
+          map.put(f, value);
         }
       }
 

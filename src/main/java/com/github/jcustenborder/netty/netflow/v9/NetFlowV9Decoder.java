@@ -100,15 +100,19 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     input.readBytes(data);
 
     // <Dump -------------------------------->
-    FieldScheme fieldScheme = new CiscoFieldScheme();
-    Map<String, Object> dict = fieldScheme.toDictionary(netflowFactory.dataFlowSet(flowSetID, data, template));
+    CiscoFieldScheme fieldScheme = new CiscoFieldScheme();
+    Map<CiscoFieldScheme.Field, Object> dict = fieldScheme.parse(netflowFactory.dataFlowSet(flowSetID, data, template));
     int fieldCount = template.fields().size();
     for (int i = 0; i < fieldCount; ++i) {
       TemplateField tf = template.fields().get(i);
-      Field field = fieldScheme.getField(tf.type());
-      String name = (field != null ? field.name() : "<<noname>>");
-      log.trace("\tfieldValue({}/{}): {}: {}",
-                i, fieldCount, name, dict.get(name));
+      CiscoFieldScheme.Field field = fieldScheme.getField(tf.type());
+      if (field != null) {
+        log.trace("\tfieldValue({}/{}): {}: {}",
+                  i, fieldCount, field, dict.get(field));
+      } else {
+        log.trace("\tfieldValue({}/{}): <<noname-field>>, typeId: {}",
+                  i, fieldCount, tf.type());
+      }
     }
     // </Dump -------------------------------->
     return this.netflowFactory.dataFlowSet(flowSetID, data, template);

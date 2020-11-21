@@ -16,12 +16,11 @@
 package com.github.jcustenborder.netty.netflow.v9;
 
 import static com.github.jcustenborder.netty.netflow.v9.NetFlowV9.FieldScheme.assertThat;
-import static com.github.jcustenborder.netty.netflow.v9.NetFlowV9.DataType;
 /**
  * Cisco's NetFlow v9 Field Type scheme as descried in this doc (table 6):
  * https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001622
  */
-public class CiscoFieldScheme implements NetFlowV9.FieldScheme {
+public class CiscoFieldScheme implements NetFlowV9.FieldScheme<CiscoFieldScheme.Field> {
 
   @Override
   public Field getField(int typeId) {
