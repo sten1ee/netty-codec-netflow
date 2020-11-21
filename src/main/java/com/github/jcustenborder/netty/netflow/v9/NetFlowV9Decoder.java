@@ -99,7 +99,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     byte[] data = new byte[length];
     input.readBytes(data);
 
-    // <Dump -------------------------------->
+    /*// <Dump -------------------------------->
     CiscoFieldScheme fieldScheme = new CiscoFieldScheme();
     Map<Field, Object> dict = fieldScheme.parse(netflowFactory.dataFlowSet(flowSetID, data, template));
     int fieldCount = template.fields().size();
@@ -114,7 +114,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
                   i, fieldCount, tf.type());
       }
     }
-    // </Dump -------------------------------->
+    // </Dump -------------------------------->*/
     return this.netflowFactory.dataFlowSet(flowSetID, data, template);
   }
 
@@ -143,8 +143,14 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
         flowSets.add(templateFlowSet);
         templateByIdMap.put(templateFlowSet.templateID(), templateFlowSet);
       } else {
-        DataFlowSet dataFlowSet = decodeData(input, flowsetID, templateByIdMap.get(flowsetID));
-        flowSets.add(dataFlowSet);
+        TemplateFlowSet template = templateByIdMap.get(flowsetID);
+        if (template != null) {
+          DataFlowSet dataFlowSet = decodeData(input, flowsetID, template);
+          flowSets.add(dataFlowSet);
+        } else {
+          // According to Cisco's doc template-less data flows should be discarded:
+          log.warn("Discarded data flow that refers to an undefined templateID: {}", flowsetID);
+        }
       }
 
       log.trace("Read {}. Available {}", input.readerIndex(), input.readableBytes());

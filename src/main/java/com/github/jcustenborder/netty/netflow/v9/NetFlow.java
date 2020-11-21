@@ -143,22 +143,28 @@ public interface NetFlow {
 
     Charset ASCII = Charset.forName("US-ASCII");
 
-    default LinkedHashMap<Field, Object> parse(DataFlowSet dfs) {
+    /**
+     * Parse a (binary) DataFlowSet into a Field-Value pairs Model
+     * which is convenient for further processing - displaying, aggregating etc
+     * @param dataFlowSet the dataFlowSet to parse (should have a non-null template!)
+     * @return the parsed Model which is effectively a Field to Value mapping (e.g. see CiscoFieldScheme's enum Field)
+     */
+    default LinkedHashMap<Field, Object> parse(DataFlowSet dataFlowSet) {
       LinkedHashMap<Field, Object> model = new LinkedHashMap<>();
 
-      if (dfs.template() == null) {
-        // According to Cisco's doc template-less data flows should be discarded:
-        return model;
+      if (dataFlowSet.template() == null) {
+        // Should never happen as Cisco's doc mandates:
+        throw new NullPointerException("Template-less data flows should have been discarded at creation time!");
       }
 
-      for (TemplateField templateField : dfs.template().fields()) {
+      for (TemplateField templateField : dataFlowSet.template().fields()) {
         Field field = getField(templateField.type());
         if (field == null) {
           Logger log = LoggerFactory.getLogger(this.getClass());
           log.warn("Unknown Field typeId: {} in FieldScheme {}", templateField.type(), this);
           continue;
         }
-        byte[] data = dfs.data();
+        byte[] data = dataFlowSet.data();
         int off = templateField.offset();
         int len = templateField.length();
         Object value;
