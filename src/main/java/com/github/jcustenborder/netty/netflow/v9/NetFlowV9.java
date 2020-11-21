@@ -126,22 +126,22 @@ public interface NetFlowV9 {
   /**
    * A set of Field(s) that maps field type id to field name and data type
    */
-  interface FieldScheme<F extends Field> {
+  interface FieldScheme {
 
-    F getField(int typeId);
+    Field getField(int typeId);
 
     Charset ASCII = Charset.forName("US-ASCII");
 
-    default LinkedHashMap<F, Object> parse(DataFlowSet dfs) {
-      LinkedHashMap<F, Object> map = new LinkedHashMap<>();
+    default LinkedHashMap<Field, Object> parse(DataFlowSet dfs) {
+      LinkedHashMap<Field, Object> map = new LinkedHashMap<>();
       for (TemplateField templateField : dfs.template().fields()) {
-        F f = getField(templateField.type());
+        Field field = getField(templateField.type());
         byte[] data = dfs.data();
         int off = templateField.offset();
         int len = templateField.length();
         Object value;
       SWITCH:
-        switch (f.dataType()) {
+        switch (field.dataType()) {
           case BYTE_ARRAY:
           case ASCII_STRING:
             value = new String(data, off, len, ASCII);
@@ -204,12 +204,12 @@ public interface NetFlowV9 {
             break;
 
           default:
-            assertThat(false, "Field " + f + " has unexpected dataType: " + f.dataType());
+            assertThat(false, "Field " + field + " has unexpected dataType: " + field.dataType());
             value = null;
         }
 
         if (value != null) {
-          map.put(f, value);
+          map.put(field, value);
         }
       }
 

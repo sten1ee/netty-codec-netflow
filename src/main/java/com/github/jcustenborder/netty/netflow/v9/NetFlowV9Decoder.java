@@ -101,11 +101,11 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
 
     // <Dump -------------------------------->
     CiscoFieldScheme fieldScheme = new CiscoFieldScheme();
-    Map<CiscoFieldScheme.Field, Object> dict = fieldScheme.parse(netflowFactory.dataFlowSet(flowSetID, data, template));
+    Map<Field, Object> dict = fieldScheme.parse(netflowFactory.dataFlowSet(flowSetID, data, template));
     int fieldCount = template.fields().size();
     for (int i = 0; i < fieldCount; ++i) {
       TemplateField tf = template.fields().get(i);
-      CiscoFieldScheme.Field field = fieldScheme.getField(tf.type());
+      Field field = fieldScheme.getField(tf.type());
       if (field != null) {
         log.trace("\tfieldValue({}/{}): {}: {}",
                   i, fieldCount, field, dict.get(field));

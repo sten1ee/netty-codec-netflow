@@ -20,7 +20,7 @@ import static com.github.jcustenborder.netty.netflow.v9.NetFlowV9.FieldScheme.as
  * Cisco's NetFlow v9 Field Type scheme as descried in this doc (table 6):
  * https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001622
  */
-public class CiscoFieldScheme implements NetFlowV9.FieldScheme<CiscoFieldScheme.Field> {
+public class CiscoFieldScheme implements NetFlowV9.FieldScheme {
 
   @Override
   public Field getField(int typeId) {
