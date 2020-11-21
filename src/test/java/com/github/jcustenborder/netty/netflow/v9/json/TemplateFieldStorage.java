@@ -17,12 +17,11 @@ package com.github.jcustenborder.netty.netflow.v9.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.github.jcustenborder.netty.netflow.v9.NetFlowV9;
+import com.github.jcustenborder.netty.netflow.v9.NetFlow;
 
 import java.io.IOException;
 
@@ -33,9 +32,9 @@ public class TemplateFieldStorage {
   public short type;
   public short length;
 
-  public static class Serializer extends JsonSerializer<NetFlowV9.TemplateField> {
+  public static class Serializer extends JsonSerializer<NetFlow.TemplateField> {
     @Override
-    public void serialize(NetFlowV9.TemplateField field, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(NetFlow.TemplateField field, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
       TemplateFieldStorage storage = new TemplateFieldStorage();
       storage.type = field.type();
       storage.length = field.length();
@@ -43,12 +42,12 @@ public class TemplateFieldStorage {
     }
   }
 
-  public static class Deserializer extends JsonDeserializer<NetFlowV9.TemplateField> {
+  public static class Deserializer extends JsonDeserializer<NetFlow.TemplateField> {
 
     @Override
-    public NetFlowV9.TemplateField deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public NetFlow.TemplateField deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
       TemplateFieldStorage storage = jsonParser.readValueAs(TemplateFieldStorage.class);
-      NetFlowV9.TemplateField field = mock(NetFlowV9.TemplateField.class);
+      NetFlow.TemplateField field = mock(NetFlow.TemplateField.class);
       when(field.type()).thenReturn(storage.type);
       when(field.length()).thenReturn(storage.length);
       return field;

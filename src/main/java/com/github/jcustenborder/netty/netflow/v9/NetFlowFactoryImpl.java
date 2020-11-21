@@ -18,7 +18,7 @@ package com.github.jcustenborder.netty.netflow.v9;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-class NetFlowFactoryImpl implements NetFlowV9.Factory, NetFlowV9 {
+class NetFlowFactoryImpl implements NetFlow.Factory, NetFlow {
 
   @Override
   public Message netflowMessage(Header header, List<FlowSet> flowsets) {

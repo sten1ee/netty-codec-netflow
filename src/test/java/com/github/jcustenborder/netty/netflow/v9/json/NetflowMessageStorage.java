@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.github.jcustenborder.netty.netflow.v9.NetFlowV9;
+import com.github.jcustenborder.netty.netflow.v9.NetFlow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -39,11 +39,11 @@ public class NetflowMessageStorage {
   public int sourceID;
   public InetSocketAddress sender;
   public InetSocketAddress recipient;
-  public List<NetFlowV9.FlowSet> flowsets;
+  public List<NetFlow.FlowSet> flowsets;
 
-  public static class Serializer extends JsonSerializer<NetFlowV9.Message> {
+  public static class Serializer extends JsonSerializer<NetFlow.Message> {
     @Override
-    public void serialize(NetFlowV9.Message header, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(NetFlow.Message header, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
       NetflowMessageStorage storage = new NetflowMessageStorage();
       storage.count = header.count();
       storage.flowSequence = header.flowSequence();
@@ -58,12 +58,12 @@ public class NetflowMessageStorage {
     }
   }
 
-  public static class Deserializer extends JsonDeserializer<NetFlowV9.Message> {
+  public static class Deserializer extends JsonDeserializer<NetFlow.Message> {
 
     @Override
-    public NetFlowV9.Message deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public NetFlow.Message deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
       NetflowMessageStorage storage = jsonParser.readValueAs(NetflowMessageStorage.class);
-      NetFlowV9.Message header = mock(NetFlowV9.Message.class);
+      NetFlow.Message header = mock(NetFlow.Message.class);
       when(header.count()).thenReturn(storage.count);
       when(header.flowSequence()).thenReturn(storage.flowSequence);
       when(header.recipient()).thenReturn(storage.recipient);

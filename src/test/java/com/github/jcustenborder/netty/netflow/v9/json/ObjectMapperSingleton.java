@@ -18,7 +18,7 @@ package com.github.jcustenborder.netty.netflow.v9.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.github.jcustenborder.netty.netflow.v9.NetFlowV9;
+import com.github.jcustenborder.netty.netflow.v9.NetFlow;
 
 import java.net.InetSocketAddress;
 
@@ -29,20 +29,20 @@ public class ObjectMapperSingleton {
     ObjectMapper objectMapper = new ObjectMapper();
     SimpleModule module = new SimpleModule();
 
-    module.addSerializer(NetFlowV9.Message.class, new NetflowMessageStorage.Serializer());
-    module.addDeserializer(NetFlowV9.Message.class, new NetflowMessageStorage.Deserializer());
+    module.addSerializer(NetFlow.Message.class, new NetflowMessageStorage.Serializer());
+    module.addDeserializer(NetFlow.Message.class, new NetflowMessageStorage.Deserializer());
 
-//    module.addSerializer(NetFlowV9.DataFlowSet.class, new DataFlowSet.Serializer());
-//    module.addDeserializer(NetFlowV9.DataFlowSet.class, new DataFlowSet.Deserializer());
+//    module.addSerializer(NetFlow.DataFlowSet.class, new DataFlowSet.Serializer());
+//    module.addDeserializer(NetFlow.DataFlowSet.class, new DataFlowSet.Deserializer());
 //
-//    module.addSerializer(NetFlowV9.TemplateFlowSet.class, new TemplateFlowSet.Serializer());
-//    module.addDeserializer(NetFlowV9.TemplateFlowSet.class, new TemplateFlowSet.Deserializer());
+//    module.addSerializer(NetFlow.TemplateFlowSet.class, new TemplateFlowSet.Serializer());
+//    module.addDeserializer(NetFlow.TemplateFlowSet.class, new TemplateFlowSet.Deserializer());
 
-    module.addSerializer(NetFlowV9.FlowSet.class, new FlowSetStorage.Serializer());
-    module.addDeserializer(NetFlowV9.FlowSet.class, new FlowSetStorage.Deserializer());
+    module.addSerializer(NetFlow.FlowSet.class, new FlowSetStorage.Serializer());
+    module.addDeserializer(NetFlow.FlowSet.class, new FlowSetStorage.Deserializer());
 
-    module.addSerializer(NetFlowV9.TemplateField.class, new TemplateFieldStorage.Serializer());
-    module.addDeserializer(NetFlowV9.TemplateField.class, new TemplateFieldStorage.Deserializer());
+    module.addSerializer(NetFlow.TemplateField.class, new TemplateFieldStorage.Serializer());
+    module.addDeserializer(NetFlow.TemplateField.class, new TemplateFieldStorage.Deserializer());
 
     module.addSerializer(InetSocketAddress.class, new InetSocketAddressStorage.Serializer());
     module.addDeserializer(InetSocketAddress.class, new InetSocketAddressStorage.Deserializer());

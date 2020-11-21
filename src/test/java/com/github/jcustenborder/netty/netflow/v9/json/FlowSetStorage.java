@@ -18,12 +18,11 @@ package com.github.jcustenborder.netty.netflow.v9.json;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.github.jcustenborder.netty.netflow.v9.NetFlowV9;
+import com.github.jcustenborder.netty.netflow.v9.NetFlow;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,22 +43,22 @@ public class FlowSetStorage {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public Short templateID;
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public List<NetFlowV9.TemplateField> fields;
+  public List<NetFlow.TemplateField> fields;
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public byte[] data;
 
-  public static class Serializer extends JsonSerializer<NetFlowV9.FlowSet> {
+  public static class Serializer extends JsonSerializer<NetFlow.FlowSet> {
     @Override
-    public void serialize(NetFlowV9.FlowSet flowSet, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(NetFlow.FlowSet flowSet, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
       FlowSetStorage storage = new FlowSetStorage();
 
-      if (flowSet instanceof NetFlowV9.TemplateFlowSet) {
+      if (flowSet instanceof NetFlow.TemplateFlowSet) {
         storage.type = FlowSetType.Template;
-        storage.fields = ((NetFlowV9.TemplateFlowSet) flowSet).fields();
-        storage.templateID = ((NetFlowV9.TemplateFlowSet) flowSet).templateID();
-      } else if (flowSet instanceof NetFlowV9.DataFlowSet) {
+        storage.fields = ((NetFlow.TemplateFlowSet) flowSet).fields();
+        storage.templateID = ((NetFlow.TemplateFlowSet) flowSet).templateID();
+      } else if (flowSet instanceof NetFlow.DataFlowSet) {
         storage.type = FlowSetType.Data;
-        storage.data = ((NetFlowV9.DataFlowSet) flowSet).data();
+        storage.data = ((NetFlow.DataFlowSet) flowSet).data();
       } else {
         throw new UnsupportedOperationException();
       }
@@ -70,20 +69,20 @@ public class FlowSetStorage {
     }
   }
 
-  public static class Deserializer extends JsonDeserializer<NetFlowV9.FlowSet> {
+  public static class Deserializer extends JsonDeserializer<NetFlow.FlowSet> {
 
     @Override
-    public NetFlowV9.FlowSet deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public NetFlow.FlowSet deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
       FlowSetStorage storage = jsonParser.readValueAs(FlowSetStorage.class);
 
       if (FlowSetType.Template == storage.type) {
-        NetFlowV9.TemplateFlowSet flowSet = mock(NetFlowV9.TemplateFlowSet.class);
+        NetFlow.TemplateFlowSet flowSet = mock(NetFlow.TemplateFlowSet.class);
         when(flowSet.flowsetID()).thenReturn(storage.flowsetID);
         when(flowSet.templateID()).thenReturn(storage.templateID);
         when(flowSet.fields()).thenReturn(storage.fields);
         return flowSet;
       } else if (FlowSetType.Data == storage.type) {
-        NetFlowV9.DataFlowSet flowSet = mock(NetFlowV9.DataFlowSet.class);
+        NetFlow.DataFlowSet flowSet = mock(NetFlow.DataFlowSet.class);
         when(flowSet.flowsetID()).thenReturn(storage.flowsetID);
         when(flowSet.data()).thenReturn(storage.data);
         return flowSet;

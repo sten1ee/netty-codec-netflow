@@ -21,9 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * This a namespace interface that contains all the interfaces related to NetFlowV9
+ * This is a 'namespace' interface that contains all the interfaces (and a DTO class) related to NetFlow
  */
-public interface NetFlowV9 {
+public interface NetFlow {
   final class Header {
     final short version;
     final short count;

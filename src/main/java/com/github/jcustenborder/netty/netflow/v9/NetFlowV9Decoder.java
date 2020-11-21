@@ -30,12 +30,12 @@ import java.util.Map;
 
 
 public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
-                              implements NetFlowV9 {
+                              implements NetFlow {
   private static final Logger log = LoggerFactory.getLogger(NetFlowV9Decoder.class);
 
-  final NetFlowV9.Factory netflowFactory;
+  final NetFlow.Factory netflowFactory;
 
-  public NetFlowV9Decoder(NetFlowV9.Factory netflowFactory) {
+  public NetFlowV9Decoder(NetFlow.Factory netflowFactory) {
     this.netflowFactory = netflowFactory;
   }
 

@@ -15,12 +15,12 @@
  */
 package com.github.jcustenborder.netty.netflow.v9;
 
-import static com.github.jcustenborder.netty.netflow.v9.NetFlowV9.FieldScheme.assertThat;
+import static com.github.jcustenborder.netty.netflow.v9.NetFlow.FieldScheme.assertThat;
 /**
  * Cisco's NetFlow v9 Field Type scheme as descried in this doc (table 6):
  * https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001622
  */
-public class CiscoFieldScheme implements NetFlowV9.FieldScheme {
+public class CiscoFieldScheme implements NetFlow.FieldScheme {
 
   @Override
   public Field getField(int typeId) {
@@ -33,7 +33,7 @@ public class CiscoFieldScheme implements NetFlowV9.FieldScheme {
    * Based on Table 6 here:
    * https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001622
    */
-  enum Field implements NetFlowV9.Field {
+  enum Field implements NetFlow.Field {
     RESERVED1                     (0,   0),
     IN_BYTES                      (1,   0, DataType.BIG_INTEGER),
     IN_PKTS                       (2,   0, DataType.BIG_INTEGER),
