@@ -103,55 +103,44 @@ public interface NetFlowV9 {
     DataFlowSet dataFlowSet(short flowsetID, byte[] data, TemplateFlowSet template);
   }
 
-  final class FieldType {
-    final String name;
-    final short typeId;   // type id in the current FieldTypeScheme
-    final short length; // 0 length indicates variable field length
-    final FieldTypeScheme.DataType dataType;
+  enum DataType {
+    ASCII_STRING,
+    HEX_BYTE,
+    BYTE,
+    SHORT,
+    INTEGER,
+    BIG_INTEGER,
+    MAC_ADDR,
+    IPV4_ADDR,
+    IPV6_ADDR,
+    BYTE_ARRAY,
+  }
 
-    FieldType(String fieldName, short fieldTypeId, short fieldLength) {
-      this(fieldName, fieldTypeId, fieldLength, FieldTypeScheme.DataType.BYTE_ARRAY);
-    }
+  interface Field {
+    String name();
 
-    FieldType(String fieldName, short fieldTypeId, short fieldLength, FieldTypeScheme.DataType fieldDataType) {
-      name = fieldName;
-      typeId = fieldTypeId;
-      length = fieldLength;
-      dataType = fieldDataType;
-    }
+    DataType dataType();
   }
 
   /**
-   * A set of FieldType(s) that maps type id to type name and field length
+   * A set of Field(s) that maps field type id to field name and data type
    */
-  interface FieldTypeScheme {
-    enum DataType {
-      ASCII_STRING,
-      HEX_BYTE,
-      BYTE,
-      SHORT,
-      INTEGER,
-      BIG_INTEGER,
-      MAC_ADDR,
-      IPV4_ADDR,
-      IPV6_ADDR,
-      BYTE_ARRAY,
-    }
+  interface FieldScheme {
 
-    FieldType getFieldType(int typeId);
+    Field getField(int typeId);
 
     Charset ASCII = Charset.forName("US-ASCII");
 
     default LinkedHashMap<String, Object>  toDictionary(DataFlowSet dfs) {
       LinkedHashMap<String, Object> map = new LinkedHashMap<>();
       for (TemplateField templateField : dfs.template().fields()) {
-        FieldType ft = getFieldType(templateField.type());
+        Field ft = getField(templateField.type());
         byte[] data = dfs.data();
         int off = templateField.offset();
         int len = templateField.length();
         Object value;
       SWITCH:
-        switch (ft.dataType) {
+        switch (ft.dataType()) {
           case BYTE_ARRAY:
           case ASCII_STRING:
             value = new String(data, off, len, ASCII);
@@ -214,12 +203,12 @@ public interface NetFlowV9 {
             break;
 
           default:
-            assertThat(false, "Unexpected dataType: " + ft.dataType);
+            assertThat(false, "Unexpected dataType: " + ft.dataType());
             value = null;
         }
 
         if (value != null) {
-          map.put(ft.name, value);
+          map.put(ft.name(), value);
         }
       }
 
