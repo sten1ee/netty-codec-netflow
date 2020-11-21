@@ -18,8 +18,10 @@ package com.github.jcustenborder.netty.netflow.v9;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -196,31 +198,8 @@ public interface NetFlow {
           case BYTE:
           case SHORT:
           case INTEGER:
-          case BIG_INTEGER: // network is BIG ENDIAN !!!
-            long val = 0;
-            for (int i = 0; i < len; ++i) {
-              if ((val >> 56) != 0) { // if the most significant byte is non-zero
-                // we will have a Long overflow on the next step, so stop here and return:
-                value = "<<BIG_INTEGER>>";
-                break SWITCH;
-              }
-              val <<= 8;
-              val |= data[off + i] & 0xFF;
-            }
-
-            if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
-              if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
-                if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
-                  value = (byte) val;
-                } else {
-                  value = (short) val;
-                }
-              } else {
-                value = (int) val;
-              }
-            } else {
-              value = (long) val;
-            }
+          case BIG_INTEGER:
+            value = parseNumber(data, off, len);
             break;
 
           default:
@@ -234,6 +213,35 @@ public interface NetFlow {
       }
 
       return model;
+    }
+
+    default Number parseNumber(byte[] data, int off, int len) {
+      if (len > 7) { // Long might not suffice
+        // delegate the job to BigInteger:
+        // Pay attention - this may result in a negative value!
+        return new BigInteger(Arrays.copyOfRange(data, off, off + len));
+      }
+
+      // network is BIG ENDIAN!
+      long val = 0;
+      for (int i = 0; i < len; ++i) {
+        val <<= 8;
+        val |= data[off + i] & 0xFF;
+      }
+
+      if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
+        if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
+          if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
+            return (byte) val;
+          } else {
+            return (short) val;
+          }
+        } else {
+          return (int) val;
+        }
+      } else {
+        return (long) val;
+      }
     }
 
     static void assertThat(boolean condition, String msg) throws IllegalArgumentException {
