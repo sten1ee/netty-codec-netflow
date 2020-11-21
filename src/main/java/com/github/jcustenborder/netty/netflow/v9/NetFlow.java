@@ -15,6 +15,9 @@
  */
 package com.github.jcustenborder.netty.netflow.v9;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
@@ -128,14 +131,31 @@ public interface NetFlow {
    */
   interface FieldScheme {
 
+    /**
+     * Get Field based on its (integer) typeId.
+     * https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001622
+     * @param typeId
+     * @return the corresponding Field or null
+     */
     Field getField(int typeId);
 
     Charset ASCII = Charset.forName("US-ASCII");
 
     default LinkedHashMap<Field, Object> parse(DataFlowSet dfs) {
-      LinkedHashMap<Field, Object> map = new LinkedHashMap<>();
+      LinkedHashMap<Field, Object> model = new LinkedHashMap<>();
+
+      if (dfs.template() == null) {
+        // According to Cisco's doc template-less data flows should be discarded:
+        return model;
+      }
+
       for (TemplateField templateField : dfs.template().fields()) {
         Field field = getField(templateField.type());
+        if (field == null) {
+          Logger log = LoggerFactory.getLogger(this.getClass());
+          log.warn("Unknown Field typeId: {} in FieldScheme {}", templateField.type(), this);
+          continue;
+        }
         byte[] data = dfs.data();
         int off = templateField.offset();
         int len = templateField.length();
@@ -209,11 +229,11 @@ public interface NetFlow {
         }
 
         if (value != null) {
-          map.put(field, value);
+          model.put(field, value);
         }
       }
 
-      return map;
+      return model;
     }
 
     static void assertThat(boolean condition, String msg) throws IllegalArgumentException {
