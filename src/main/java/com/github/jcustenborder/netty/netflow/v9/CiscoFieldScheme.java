@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Jeremy Custenborder (jcustenborder@gmail.com)
+ * Copyright (C) 2020 Stanislav Jordanov (stenlee@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.github.jcustenborder.netty.netflow.v9;
 
-import static com.github.jcustenborder.netty.netflow.v9.NetFlow.FieldScheme.assertThat;
 /**
  * Cisco's NetFlow v9 Field Type scheme as descried in this doc (table 6):
  * https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001622
@@ -171,6 +170,12 @@ public class CiscoFieldScheme implements NetFlow.FieldScheme {
       assertThat(CISCO_FIELD_TYPES[i].typeId == i, "typeId != index at index " + i);
     }
     assertThat(CISCO_FIELD_TYPES[8].name().equals("IPV4_SRC_ADDR"), "Unexpected Field.name for typeId " + 8);
+  }
+
+  static void assertThat(boolean condition, String msg) throws IllegalArgumentException {
+    if (!condition) {
+      throw new IllegalArgumentException(msg);
+    }
   }
 
   public static void main(String[] args) {

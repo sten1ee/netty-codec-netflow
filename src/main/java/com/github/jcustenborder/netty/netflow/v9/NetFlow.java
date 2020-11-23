@@ -221,10 +221,13 @@ public interface NetFlow {
       return model;
     }
 
+    /**
+     *  Parse a (mostly unsigned) number into appropriate Java integral type (Byte, Short, Int, Long or BigInteger)
+     */
     default Number parseNumber(byte[] data, int off, int len) {
-      if (len > 7) { // Long might not suffice
-        // delegate the job to BigInteger:
-        // Pay attention - this may result in a negative value!
+      if (len > 8 || len == 8 && data[0] < 0) { // Long will not suffice
+        // Delegate the job to BigInteger:
+        // Note - the way we handle it here may result in a negative value!
         return new BigInteger(Arrays.copyOfRange(data, off, off + len));
       }
 
