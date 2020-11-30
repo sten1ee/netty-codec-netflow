@@ -43,12 +43,14 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     this(new NetFlowFactoryImpl());
   }
 
-  Header decodeHeader(ByteBuf b, InetSocketAddress sender, InetSocketAddress recipient) {
-    ByteBuf input = b.readSlice(20);
+  Header decodeHeader(ByteBuf input, InetSocketAddress sender, InetSocketAddress recipient) {
 
     short version = input.readShort();
+    if (version != 9 && version != 10) {
+      throw new IllegalStateException("Unexpected NetFlow/IPFIX version: " + version);
+    }
     short count = input.readShort();
-    int uptime = input.readInt();
+    int uptime = (version == 9 ? input.readInt() : 0); // NetFlow v9 only!
     int timestamp = input.readInt();
     int flowSequence = input.readInt();
     int sourceID = input.readInt();
@@ -57,7 +59,6 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
         version, count, uptime, timestamp, flowSequence, sourceID
     );
 
-    checkReadFully(input);
     return new Header(version, count, uptime, timestamp, flowSequence, sourceID, sender, recipient);
   }
 
