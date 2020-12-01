@@ -22,7 +22,10 @@ b.group(bossGroup)
             new NetFlowV9RequestHandler()
         );
       }
-    });
+    })
+    .bind(2055) // or whatever the port number
+    .sync();    // or skip `.sync()`, if you don't want to wait here until your server is up and running
+;
 ```
 
 ### NetFlow Message Processing
