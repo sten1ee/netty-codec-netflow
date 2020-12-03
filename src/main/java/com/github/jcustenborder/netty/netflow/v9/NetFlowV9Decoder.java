@@ -43,20 +43,26 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     this(new NetFlowFactoryImpl());
   }
 
-  Header decodeHeader(ByteBuf input, InetSocketAddress sender, InetSocketAddress recipient) {
-
+  /**
+   *  Here we read the version first and then:
+   *  version == 9 means NetFlow v9 (20 bytes header)
+   *               https://www.cisco.com/en/US/technologies/tk648/tk362/technologies_white_paper09186a00800a3db9.html#wp9001604
+   *  version == 10 means IPFIX (16 bytes header)
+   *               https://tools.ietf.org/html/rfc7011#page-15
+   */
+  protected Header decodeHeader(ByteBuf input, InetSocketAddress sender, InetSocketAddress recipient) {
     short version = input.readShort();
     if (version != 9 && version != 10) {
       throw new IllegalStateException("Unexpected NetFlow/IPFIX version: " + version);
     }
     short count = input.readShort();
-    int uptime = (version == 9 ? input.readInt() : 0); // NetFlow v9 only!
+    int uptime = (version == 9 ? input.readInt() : 0); // 'uptime' is there in NetFlow v9 only!
     int timestamp = input.readInt();
     int flowSequence = input.readInt();
     int sourceID = input.readInt();
 
     log.trace("version = {} count = {} uptime = {} timestamp = {} flowSequence = {} sourceID = {}",
-        version, count, uptime, timestamp, flowSequence, sourceID
+            version, count, uptime, timestamp, flowSequence, sourceID
     );
 
     return new Header(version, count, uptime, timestamp, flowSequence, sourceID, sender, recipient);
@@ -70,7 +76,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     }
   }
 
-  TemplateFlowSet decodeTemplate(ByteBuf b, short flowSetID) {
+  protected TemplateFlowSet decodeTemplate(ByteBuf b, short flowSetID) {
     int length = b.readShort() - 4;
     log.trace("readSlice({})", length);
     ByteBuf input = b.readSlice(length);
@@ -93,7 +99,7 @@ public class NetFlowV9Decoder extends MessageToMessageDecoder<DatagramPacket>
     return this.netflowFactory.templateFlowSet(flowSetID, templateID, fields);
   }
 
-  DataFlowSet decodeData(ByteBuf b, short flowSetID, TemplateFlowSet template) {
+  protected DataFlowSet decodeData(ByteBuf b, short flowSetID, TemplateFlowSet template) {
     int length = b.readShort() - 4;
     log.trace("readSlice({})", length);
     ByteBuf input = b.readSlice(length);
